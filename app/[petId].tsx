@@ -1,16 +1,37 @@
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
-import pets from "@/data/pets";
+import axios from "axios";
+import { Pet } from "./types";
 
 const PetDetails = () => {
   const { petId } = useLocalSearchParams();
-  const pet = pets[0];
+  const [pet, setPet] = useState<Pet | null>(null);
+
+  useEffect(() => {
+    if (!petId) return;
+
+    axios
+      .get<Pet>(
+        `https://pets-react-query-backend.eapi.joincoded.com/pets/${petId}`
+      )
+      .then((res) => setPet(res.data))
+      .catch((err) => console.error("Error fetching pet:", err));
+  }, [petId]);
+
+  if (!pet) {
+    return (
+      <View style={styles.container}>
+        <Text>Loading pet details...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.name}>{pet.name}</Text>
       <Image source={{ uri: pet.image }} style={styles.image} />
-      <Text style={styles.description}> {pet.description}</Text>
+      <Text style={styles.description}>{pet.description}</Text>
       <Text style={styles.type}>Type: {pet.type}</Text>
 
       <View>
