@@ -4,23 +4,82 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Alert,
+  ScrollView,
 } from "react-native";
-import React from "react";
+import React, { useState } from "react";
+import axios from "axios";
 
 const AddPet = () => {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Add Your Pet! </Text>
-      <TextInput placeholder="Name" style={styles.input} />
-      <TextInput placeholder="Description" style={styles.input} />
-      <TextInput placeholder="Type" style={styles.input} />
-      <TextInput placeholder="Image" style={styles.input} />
-      <TextInput placeholder="Adopted" style={styles.input} />
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [type, setType] = useState("");
+  const [image, setImage] = useState("");
 
-      <TouchableOpacity style={styles.button}>
+  const handleAddPet = async () => {
+    if (!name || !description || !type || !image) {
+      Alert.alert("Error", "Please fill out all fields.");
+      return;
+    }
+
+    try {
+      await axios.post(
+        "https://pets-react-query-backend.eapi.joincoded.com/pets",
+        {
+          name,
+          description,
+          type,
+          image,
+          adopted: 0, // Default value
+        }
+      );
+
+      Alert.alert("Success", "Pet added successfully!");
+
+      // Clear the form
+      setName("");
+      setDescription("");
+      setType("");
+      setImage("");
+    } catch (error) {
+      console.error("Error adding pet:", error);
+      Alert.alert("Error", "Failed to add pet.");
+    }
+  };
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Add Your Pet!</Text>
+
+      <TextInput
+        placeholder="Name"
+        style={styles.input}
+        value={name}
+        onChangeText={setName}
+      />
+      <TextInput
+        placeholder="Description"
+        style={styles.input}
+        value={description}
+        onChangeText={setDescription}
+      />
+      <TextInput
+        placeholder="Type"
+        style={styles.input}
+        value={type}
+        onChangeText={setType}
+      />
+      <TextInput
+        placeholder="Image URL"
+        style={styles.input}
+        value={image}
+        onChangeText={setImage}
+      />
+
+      <TouchableOpacity style={styles.button} onPress={handleAddPet}>
         <Text style={styles.buttonText}>Add Pet</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -28,29 +87,35 @@ export default AddPet;
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
+    padding: 20,
     backgroundColor: "#f9e3be",
+    justifyContent: "center",
   },
   title: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "bold",
     textAlign: "center",
-    margin: 10,
+    marginBottom: 20,
   },
   input: {
     backgroundColor: "white",
     padding: 10,
     borderRadius: 10,
-    margin: 10,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: "#ccc",
   },
   button: {
     backgroundColor: "black",
-    padding: 10,
+    padding: 15,
     borderRadius: 10,
-    margin: 10,
+    marginTop: 10,
   },
   buttonText: {
     color: "white",
     textAlign: "center",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });

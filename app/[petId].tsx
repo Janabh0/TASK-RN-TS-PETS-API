@@ -1,11 +1,19 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  Alert,
+} from "react-native";
 import React, { useEffect, useState } from "react";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import axios from "axios";
-import { Pet } from "./types";
+import { Pet } from "./types"; // Update path if needed
 
 const PetDetails = () => {
   const { petId } = useLocalSearchParams();
+  const router = useRouter();
   const [pet, setPet] = useState<Pet | null>(null);
 
   useEffect(() => {
@@ -18,6 +26,19 @@ const PetDetails = () => {
       .then((res) => setPet(res.data))
       .catch((err) => console.error("Error fetching pet:", err));
   }, [petId]);
+
+  const handleDelete = async () => {
+    try {
+      await axios.delete(
+        `https://pets-react-query-backend.eapi.joincoded.com/pets/${petId}`
+      );
+      Alert.alert("Success", "Pet deleted!");
+      router.back(); // Navigate back
+    } catch (error) {
+      Alert.alert("Error", "Failed to delete pet.");
+      console.error(error);
+    }
+  };
 
   if (!pet) {
     return (
@@ -34,11 +55,9 @@ const PetDetails = () => {
       <Text style={styles.description}>{pet.description}</Text>
       <Text style={styles.type}>Type: {pet.type}</Text>
 
-      <View>
-        <TouchableOpacity style={styles.button}>
-          <Text style={styles.buttonText}>Delete</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity style={styles.button} onPress={handleDelete}>
+        <Text style={styles.buttonText}>Delete</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -54,6 +73,8 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: 300,
+    borderRadius: 10,
+    marginVertical: 10,
   },
   name: {
     fontSize: 24,
@@ -74,7 +95,7 @@ const styles = StyleSheet.create({
     backgroundColor: "black",
     padding: 10,
     borderRadius: 10,
-    margin: 10,
+    marginTop: 20,
   },
   buttonText: {
     color: "white",
