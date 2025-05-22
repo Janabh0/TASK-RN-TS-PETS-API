@@ -30,13 +30,12 @@ const AddPet = () => {
           description,
           type,
           image,
-          adopted: 0, // Default value
+          adopted: 0,
         }
       );
 
       Alert.alert("Success", "Pet added successfully!");
 
-      // Clear the form
       setName("");
       setDescription("");
       setType("");
