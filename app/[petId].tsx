@@ -9,7 +9,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import axios from "axios";
-import { Pet } from "./types"; // Update path if needed
+import { Pet } from "./types";
 
 const PetDetails = () => {
   const { petId } = useLocalSearchParams();
@@ -33,7 +33,7 @@ const PetDetails = () => {
         `https://pets-react-query-backend.eapi.joincoded.com/pets/${petId}`
       );
       Alert.alert("Success", "Pet deleted!");
-      router.back(); // Navigate back
+      router.back();
     } catch (error) {
       Alert.alert("Error", "Failed to delete pet.");
       console.error(error);

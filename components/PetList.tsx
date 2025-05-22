@@ -1,5 +1,3 @@
-// PetList.tsx
-
 import {
   ScrollView,
   StyleSheet,
@@ -10,25 +8,23 @@ import {
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import PetItem from "./PetItem";
-import { Pet } from "../app/types"; // Ensure Pet type is correctly imported
+import { Pet } from "../app/types";
 
 function PetList() {
-  const [search, setSearch] = useState<string>(""); // specify the state type explicitly
-  const [type, setType] = useState<string>(""); // specify the state type explicitly
-  const [displayPets, setDisplayPets] = useState<Pet[]>([]); // use Pet[] type for pet list
+  const [search, setSearch] = useState<string>("");
+  const [type, setType] = useState<string>("");
+  const [displayPets, setDisplayPets] = useState<Pet[]>([]);
 
-  // Fetch pets data when component mounts
   useEffect(() => {
     axios
-      .get<Pet[]>("https://pets-react-query-backend.eapi.joincoded.com/pets") // Axios get with correct type
-      .then((res) => setDisplayPets(res.data)) // set the fetched data in state
-      .catch((err) => console.error("Error fetching pets:", err)); // Log errors if any
+      .get<Pet[]>("https://pets-react-query-backend.eapi.joincoded.com/pets")
+      .then((res) => setDisplayPets(res.data))
+      .catch((err) => console.error("Error fetching pets:", err));
   }, []);
 
-  // Filter the pet list based on search text and type
   const petList = displayPets
-    .filter((pet) => pet.name.toLowerCase().includes(search.toLowerCase())) // Search by name
-    .filter((pet) => pet.type.toLowerCase().includes(type.toLowerCase())) // Filter by type
+    .filter((pet) => pet.name.toLowerCase().includes(search.toLowerCase()))
+    .filter((pet) => pet.type.toLowerCase().includes(type.toLowerCase()))
     .map((pet) => (
       <PetItem
         key={pet.id}
@@ -37,7 +33,7 @@ function PetList() {
           throw new Error("Function not implemented.");
         }}
         displayPets={[]}
-      /> // Pass each pet to PetItem component
+      />
     ));
 
   return (
@@ -45,14 +41,12 @@ function PetList() {
       contentContainerStyle={styles.container}
       style={styles.containerStyle}
     >
-      {/* Search Input */}
       <TextInput
         placeholder="Search for a pet"
         style={styles.searchInput}
-        onChangeText={(value) => setSearch(value)} // Update search state
+        onChangeText={(value) => setSearch(value)}
       />
 
-      {/* Filter by pet type */}
       <ScrollView horizontal contentContainerStyle={styles.filterContainer}>
         <TouchableOpacity
           style={styles.filterButton}
@@ -80,7 +74,6 @@ function PetList() {
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Render the pet list */}
       {petList}
     </ScrollView>
   );
