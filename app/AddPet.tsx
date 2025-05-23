@@ -3,47 +3,68 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View,
   Alert,
   ScrollView,
 } from "react-native";
 import React, { useState } from "react";
-import axios from "axios";
+import { useRouter } from "expo-router";
+import { useMutation } from "@tanstack/react-query";
+import { createPet } from "../api/pets";
+import type { AxiosError } from "axios";
+import { Pet } from "./types";
+
+interface NewPet {
+  name: string;
+  description: string;
+  type: string;
+  image: string;
+  image2: string;
+  adopted: number;
+}
 
 const AddPet = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [type, setType] = useState("");
   const [image, setImage] = useState("");
+  const router = useRouter();
 
-  const handleAddPet = async () => {
+  const mutation = useMutation({
+    mutationFn: (data: NewPet) => createPet(data),
+    onSuccess: () => {
+      Alert.alert("Success", "Pet added successfully!", [
+        {
+          text: "OK",
+          onPress: () => {
+            setName("");
+            setDescription("");
+            setType("");
+            setImage("");
+            router.back();
+          },
+        },
+      ]);
+    },
+    onError: (error: AxiosError) => {
+      console.error("Error adding pet:", error);
+      Alert.alert("Error", "Failed to add pet.");
+    },
+  });
+
+  const handleAddPet = () => {
     if (!name || !description || !type || !image) {
       Alert.alert("Error", "Please fill out all fields.");
       return;
     }
 
-    try {
-      await axios.post(
-        "https://pets-react-query-backend.eapi.joincoded.com/pets",
-        {
-          name,
-          description,
-          type,
-          image,
-          adopted: 0,
-        }
-      );
-
-      Alert.alert("Success", "Pet added successfully!");
-
-      setName("");
-      setDescription("");
-      setType("");
-      setImage("");
-    } catch (error) {
-      console.error("Error adding pet:", error);
-      Alert.alert("Error", "Failed to add pet.");
-    }
+    mutation.mutate({
+      name,
+      description,
+      type,
+      image,
+      image2: image,
+      adopted: 0,
+    });
   };
 
   return (
@@ -75,8 +96,14 @@ const AddPet = () => {
         onChangeText={setImage}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleAddPet}>
-        <Text style={styles.buttonText}>Add Pet</Text>
+      <TouchableOpacity
+        style={[styles.button, mutation.isPending && styles.buttonDisabled]}
+        onPress={handleAddPet}
+        disabled={mutation.isPending}
+      >
+        <Text style={styles.buttonText}>
+          {mutation.isPending ? "Adding..." : "Add Pet"}
+        </Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -110,6 +137,9 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 10,
     marginTop: 10,
+  },
+  buttonDisabled: {
+    backgroundColor: "#666",
   },
   buttonText: {
     color: "white",

@@ -5,33 +5,40 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Alert,
 } from "react-native";
 import React, { useState } from "react";
 import { Link } from "expo-router";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deletePet } from "../api/pets";
+import { Pet } from "../app/types";
 
 interface PetItemProps {
-  pet: {
-    id: number;
-    name: string;
-    description: string;
-    type: string;
-    image: string;
-    image2: string;
-  };
-  setDisplayPets: (pets: any[]) => void;
-  displayPets: any[];
+  pet: Pet;
 }
 
-const PetItem = ({ pet, setDisplayPets, displayPets }: PetItemProps) => {
+const PetItem = ({ pet }: PetItemProps) => {
   const [image, setImage] = useState(pet.image);
+  const queryClient = useQueryClient();
+
+  const { mutate: handleDelete, isLoading } = useMutation({
+    mutationFn: deletePet,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["pets"] });
+      Alert.alert("Success", "Pet adopted successfully!");
+    },
+    onError: (error) => {
+      console.error("Error adopting pet:", error);
+      Alert.alert("Error", "Failed to adopt pet.");
+    },
+  });
+
   return (
     <Link href={`/${pet.id}`} asChild>
       <Pressable style={styles.container}>
         <View style={styles.petInfo}>
           <Image source={{ uri: image }} style={styles.image} />
-
           <Text style={styles.name}>{pet.name}</Text>
-
           <Text style={styles.description}>{pet.description}</Text>
         </View>
 
@@ -44,12 +51,13 @@ const PetItem = ({ pet, setDisplayPets, displayPets }: PetItemProps) => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.adoptButton}
-            onPress={() => {
-              setDisplayPets(displayPets.filter((p) => p.id !== pet.id));
-            }}
+            style={[styles.adoptButton, isLoading && styles.buttonDisabled]}
+            onPress={() => handleDelete(pet.id)}
+            disabled={isLoading}
           >
-            <Text style={styles.buttonText}>Adopt</Text>
+            <Text style={styles.buttonText}>
+              {isLoading ? "Adopting..." : "Adopt"}
+            </Text>
           </TouchableOpacity>
         </View>
       </Pressable>
@@ -126,5 +134,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: "50%",
     marginBottom: 10,
+  },
+  buttonDisabled: {
+    backgroundColor: "#999",
   },
 });
